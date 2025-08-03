@@ -16,6 +16,7 @@ struct ContentView: View {
     @State private var textColor = Color.primary
     @State private var startTimer: Timer?
     @State private var finishTimer: Timer?
+    @State private var shuttle = "5.1"
     
     let shuttleWords: [String] = ["ATTACK",
                                   "BREATHE",
@@ -28,7 +29,7 @@ struct ContentView: View {
                                   "INTENT",
                                   "JOY",
                                   "KEEP IT UP",
-                                  "14.1: LOCK IN",
+                                  "LOCK IN",
                                   "MINDSET",
                                   "NOW",
                                   "OWN IT",
@@ -36,7 +37,7 @@ struct ContentView: View {
                                   "QUIET",
                                   "RELENTLESS",
                                   "STRONG",
-                                  "15.1: TRUST",
+                                  "TRUST",
                                   "UP",
                                   "VICTORY",
                                   "WANT, WILL",
@@ -44,13 +45,14 @@ struct ContentView: View {
                                   "YES",
                                   "ZERO EXCUSES",
                                   "AGAIN",
-                                  "16.1: BREATHE",
+                                  "BREATHE",
                                   "CLIMB",
-                                  "16.3: DO THE THANG",
+                                  "DO THE THANG",
                                   "EXTRA",
+                                  "GRIND",
                                   "FIGHT",
                                   "HAUL ASS",
-                                  "16.8: ICE"]
+                                  "ICE"]
     let shuttleNums: [String] = ["5.1",
                                   "9.1",
                                   "11.1",
@@ -63,28 +65,29 @@ struct ContentView: View {
                                   "13.3",
                                   "13.4",
                                   "14.1",
-                                  "MINDSET",
-                                  "NOW",
-                                  "OWN IT",
-                                  "PUSH",
-                                  "QUIET",
-                                  "RELENTLESS",
-                                  "STRONG",
-                                  "15.1: TRUST",
-                                  "UP",
-                                  "VICTORY",
-                                  "WANT, WILL",
-                                  "XCEED",
-                                  "YES",
-                                  "ZERO EXCUSES",
-                                  "AGAIN",
-                                  "16.1: BREATHE",
-                                  "CLIMB",
-                                  "16.3: DO THE THANG",
-                                  "EXTRA",
-                                  "FIGHT",
-                                  "HAUL ASS",
-                                  "16.8: ICE"]
+                                  "14.2",
+                                  "14.3",
+                                  "14.4",
+                                  "14.5",
+                                  "14.6",
+                                  "14.7",
+                                  "14.8",
+                                  "15.1",
+                                  "15.2",
+                                  "15.3",
+                                  "15.4",
+                                  "15.5",
+                                  "15.6",
+                                  "15.7",
+                                  "15.8",
+                                  "16.1",
+                                  "16.2",
+                                  "16.3",
+                                  "16.4",
+                                  "16.5",
+                                  "16.6",
+                                  "16.7",
+                                  "16.8"]
 
     
     let startSchedule = TimeConstants.startSchedule
@@ -94,7 +97,9 @@ struct ContentView: View {
     
 
     var body: some View {
-        VStack(spacing: 20) {
+        VStack() {
+            Text(shuttle)
+                .font(.caption)
             Text(statusText)
                 .font(.largeTitle)
                 .foregroundColor(textColor)
@@ -110,6 +115,7 @@ struct ContentView: View {
         isRunning = true
         shuttleIndex = 0
         statusText = "\(shuttleWords[shuttleIndex % shuttleWords.count])"
+        shuttle = "\(shuttleNums[shuttleIndex % shuttleNums.count])"
         textColor = .green
                 
         for i in 0..<min(startSchedule.count, finishSchedule.count) {
@@ -149,6 +155,7 @@ struct ContentView: View {
                     textColor = .red
                     shuttleIndex += 1
                     statusText = "\(shuttleWords[shuttleIndex % shuttleWords.count])"
+                    shuttle = "\(shuttleNums[shuttleIndex % shuttleNums.count])"
                 }
             }
             
