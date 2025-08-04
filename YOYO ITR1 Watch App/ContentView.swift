@@ -11,12 +11,18 @@ import Foundation
 
 struct ContentView: View {
     @State private var isRunning = false
-    @State private var shuttleIndex = 0 // Which shuttle we're on (A, B, C…)
-    @State private var statusText = "Ready"
-    @State private var textColor = Color.primary
-    @State private var startTimer: Timer?
-    @State private var finishTimer: Timer?
-    @State private var shuttle = "5.1"
+        @State private var shuttleIndex = 0 // Which shuttle we're on (A, B, C…)
+        @State private var statusText = "Ready"
+        @State private var textColor = Color.primary
+        @State private var timer: Timer?
+        @State private var startTime: Date?
+        @State private var shuttle = "5.1"
+        
+        // Track which events have already been triggered for current shuttle
+        @State private var hasTriggeredStart = false
+        @State private var hasTriggeredHalf = false
+        @State private var hasTriggeredWarning = false
+        @State private var hasTriggeredFinish = false
     
     let shuttleWords: [String] = ["ATTACK",
                                   "BREATHE",
@@ -112,61 +118,88 @@ struct ContentView: View {
     }
 
     func startTest() {
-        isRunning = true
+        startTime = Date()
         shuttleIndex = 0
-        statusText = "\(shuttleWords[shuttleIndex % shuttleWords.count])"
-        shuttle = "\(shuttleNums[shuttleIndex % shuttleNums.count])"
-        textColor = .green
+        isRunning = true
+        statusText = shuttleWords[shuttleIndex]
+        shuttle = shuttleNums[shuttleIndex]
+        
+        // Reset event flags
+        resetEventFlags()
+
+        timer = Timer.scheduledTimer(withTimeInterval: 0.05, repeats: true
+        ) { _ in
+            guard let start = startTime else { return }
+            let elapsed = Date().timeIntervalSince(start)
+
+            // Make sure we don't go out of bounds
+            guard shuttleIndex < startSchedule.count else {
+                stopTest()
+                return
+            }
+
+            //check for start times
+            if !hasTriggeredStart && elapsed >= startSchedule[shuttleIndex] {
+                WKInterfaceDevice.current().play(.notification)
+                textColor = .green
+                hasTriggeredStart = true
+                print("Start triggered for shuttle \(shuttleIndex) at \(elapsed)s")
+            }
+            
+            //check for halfway times
+            if !hasTriggeredHalf && elapsed >= halfSchedule[shuttleIndex] {
+                WKInterfaceDevice.current().play(.directionUp)
+                hasTriggeredHalf = true
+                print("Half triggered for shuttle \(shuttleIndex) at \(elapsed)s")
+            }
+            
+            //check for warning times
+            if !hasTriggeredWarning && elapsed >= warningSchedule[shuttleIndex] {
+                WKInterfaceDevice.current().play(.click)
+                hasTriggeredWarning = true
+                print("Warning triggered for shuttle \(shuttleIndex) at \(elapsed)s")
+            }
+            
+            //check for finish times
+            if !hasTriggeredFinish && elapsed >= finishSchedule[shuttleIndex] {
+                WKInterfaceDevice.current().play(.success)
+                shuttleIndex += 1
+                textColor = .red
+                hasTriggeredFinish = true
+                print("Finish triggered, advancing to shuttle \(shuttleIndex) at \(elapsed)s")
                 
-        for i in 0..<min(startSchedule.count, finishSchedule.count) {
-            let startTime = startSchedule[i]
-            let endTime = finishSchedule[i]
-            let halfTime = halfSchedule[i]
-            let warningTime = warningSchedule[i]
-            
-            // START
-            DispatchQueue.main.asyncAfter(deadline: .now() + startTime) {
-                if isRunning {
-                    WKInterfaceDevice.current().play(.start)
-                    textColor = .green
+                // Check if we've completed all shuttles
+                if shuttleIndex >= shuttleWords.count || shuttleIndex >= shuttleNums.count {
+                    stopTest()
+                    statusText = "COMPLETE!"
+                    return
                 }
+                
+                // Update display for next shuttle
+                statusText = shuttleWords[shuttleIndex]
+                shuttle = shuttleNums[shuttleIndex]
+                
+                // Reset flags for next shuttle
+                resetEventFlags()
             }
-            
-            // HALFWAY
-            DispatchQueue.main.asyncAfter(deadline: .now() + halfTime) {
-                if isRunning {
-                    WKInterfaceDevice.current().play(.directionUp)
-                    textColor = .green
-                }
-            }
-            
-            // ONE SECOND WARNING
-            DispatchQueue.main.asyncAfter(deadline: .now() + warningTime) {
-                if isRunning {
-                    WKInterfaceDevice.current().play(.click)
-                    textColor = .green
-                }
-            }
-            
-            // FINISH/ START REST
-            DispatchQueue.main.asyncAfter(deadline: .now() + endTime) {
-                if isRunning {
-                    WKInterfaceDevice.current().play(.success)
-                    textColor = .red
-                    shuttleIndex += 1
-                    statusText = "\(shuttleWords[shuttleIndex % shuttleWords.count])"
-                    shuttle = "\(shuttleNums[shuttleIndex % shuttleNums.count])"
-                }
-            }
-            
         }
+    }
+    
+    func resetEventFlags() {
+        hasTriggeredStart = false
+        hasTriggeredHalf = false
+        hasTriggeredWarning = false
+        hasTriggeredFinish = false
     }
 
     func stopTest() {
+        timer?.invalidate()
+        timer = nil
         isRunning = false
-        startTimer?.invalidate()
-        finishTimer?.invalidate()
-        statusText = "Stopped"
+        statusText = "Ready"
         textColor = .primary
+        shuttleIndex = 0
+        shuttle = "5.1"
+        resetEventFlags()
     }
 }

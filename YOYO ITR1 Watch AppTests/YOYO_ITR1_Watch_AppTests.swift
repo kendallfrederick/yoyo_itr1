@@ -10,8 +10,9 @@ import Testing
 
 struct YOYO_ITR1_Watch_AppTests {
 
-    @Test func example() async throws {
+    @Test func testStartSchedule() async throws {
         // Write your test here and use APIs like `#expect(...)` to check expected conditions.
+        #expect(TimeConstants.startSchedule[1], 24.40)
     }
 
 }

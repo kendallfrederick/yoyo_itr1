@@ -9,7 +9,7 @@ import WatchKit
 
 struct TimeConstants {
     static let startSchedule: [TimeInterval] = [0.00,
-                                                 24.40,
+                                                 24.40, 
                                                  46.90,
                                                  68.00,
                                                  89.10,
